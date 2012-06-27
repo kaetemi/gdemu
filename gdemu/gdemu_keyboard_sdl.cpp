@@ -1,14 +1,14 @@
 /**
  * KeyboardClass
  * $Id$
- * \file gdemu_keyboard_directinput.cpp
+ * \file gdemu_keyboard_sdl.cpp
  * \brief KeyboardClass
- * \date 2011-05-29 22:02GMT
+ * \date 2012-06-27 11:48GMT
  * \author Jan Boon (Kaetemi)
  */
 
 /*
- * Copyright (C) 2011  Jan Boon (Kaetemi)
+ * Copyright (C) 2011-2012  Jan Boon (Kaetemi)
  *
  * This file is part of GAMEDUINO EMULATOR.
  * GAMEDUINO EMULATOR is free software: you can redistribute it and/or
@@ -26,7 +26,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GDEMU_SDL
+#ifdef GDEMU_SDL
 
 // #include <...>
 #include "gdemu_keyboard.h"
@@ -51,13 +51,13 @@
 namespace GDEMU {
 
 KeyboardClass Keyboard;
-
+/*
 static LPDIRECTINPUT8 s_lpDI = NULL;
 static LPDIRECTINPUTDEVICE8 s_lpDIKeyboard = NULL;
-static unsigned char s_BufferKeyboard[256];
+static unsigned char s_BufferKeyboard[256];*/
 
 void KeyboardClass::begin()
-{
+{/*
 	HRESULT hr;
 
 	if (s_lpDI) SystemWindows.Error(TEXT("KeyboardClass::begin()  s_lpDI != NULL"));
@@ -79,11 +79,11 @@ void KeyboardClass::begin()
 
 	// Get access to the input device, may fail the first time round
     hr = s_lpDIKeyboard->Acquire();
-    //if FAILED(hr) { Input::Release(); Utilities::Error(TEXT("Keyboard not available (4)")); } // doesn't matter
+    //if FAILED(hr) { Input::Release(); Utilities::Error(TEXT("Keyboard not available (4)")); } // doesn't matter*/
 }
 
 void KeyboardClass::update()
-{
+{/*
 	HRESULT hr;
 
     hr = s_lpDIKeyboard->GetDeviceState(sizeof(s_BufferKeyboard),(LPVOID)&s_BufferKeyboard);
@@ -124,11 +124,12 @@ void KeyboardClass::update()
 	System.setAnalogRead(GDEMU_ANALOG_Y, analogY);
 
 	//return true;
+	return;*/
 	return;
 }
 
 void KeyboardClass::end()
-{
+{/*
 	if (s_lpDIKeyboard)
 	{
 		s_lpDIKeyboard->Unacquire();
@@ -141,11 +142,11 @@ void KeyboardClass::end()
 		s_lpDI->Release();
 		s_lpDI = NULL;
 	}
-	else SystemWindows.Debug(TEXT("KeyboardClass::end()  s_lpDI == NULL"));
+	else SystemWindows.Debug(TEXT("KeyboardClass::end()  s_lpDI == NULL"));*/
 }
 
 } /* namespace GDEMU */
 
-#endif /* #ifndef GDEMU_SDL */
+#endif /* #ifdef GDEMU_SDL */
 
 /* end of file */

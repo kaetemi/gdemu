@@ -1,9 +1,9 @@
 /**
- * SystemWindowsClass
+ * SystemSdlClass
  * $Id$
- * \file gdemu_system_windows.h
- * \brief SystemWindowsClass
- * \date 2011-05-25 19:28GMT
+ * \file gdemu_system_sdl.h
+ * \brief SystemSdlClass
+ * \date 2012-06-27 11:28GMT
  * \author Jan Boon (Kaetemi)
  */
 
@@ -26,43 +26,28 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GDEMU_SDL
-#ifndef GDEMU_SYSTEM_WINDOWS_H
-#define GDEMU_SYSTEM_WINDOWS_H
+#ifdef GDEMU_SDL
+#ifndef GDEMU_SYSTEM_SDL_H
+#define GDEMU_SYSTEM_SDL_H
 // #include <...>
 
-
-#ifndef WINVER                  // Specifies that the minimum required platform is Windows XP.
-#define WINVER 0x0510           // Change this to the appropriate value to target other versions of Windows.
-#endif
-#ifndef _WIN32_WINNT            // Specifies that the minimum required platform is Windows XP.
-#define _WIN32_WINNT 0x0510     // Change this to the appropriate value to target other versions of Windows.
-#endif
-#ifndef _WIN32_WINDOWS          // Specifies that the minimum required platform is Windows 98.
-#define _WIN32_WINDOWS 0x0410   // Change this to the appropriate value to target Windows Me or later.
-#endif
-#ifndef _WIN32_IE               // Specifies that the minimum required platform is Internet Explorer 6.0.
-#define _WIN32_IE 0x0600        // Change this to the appropriate value to target other versions of IE.
-#endif
-
-
-// Windows Headers
-#include <windows.h>
-#include <avrt.h>
+// Sdl Headers
+#include <SDL.h>
+/*#include <sdl.h>
+#include <avrt.h>*/
 
 // GDI+
-#include <gdiplus.h>
+/*#include <gdiplus.h>*/
 
 // WASAPI
-#include <objbase.h>
+/*#include <objbase.h>
 #include <mmreg.h>
 #include <mmdeviceapi.h>
 #include <audioclient.h>
-#include <audiopolicy.h>
+#include <audiopolicy.h>*/
 
 // C Headers
 #include <cstdlib>
-#include <tchar.h>
 
 // STL Headers
 #include <string>
@@ -74,12 +59,12 @@
 #include <cmath>
 
 // DirectInput Headers
-#define DIRECTINPUT_VERSION 0x0800
-#include "dinput.h"
+/*#define DIRECTINPUT_VERSION 0x0800
+#include "dinput.h"*/
 
 
 // TString
-#ifdef _UNICODE
+/*#ifdef _UNICODE
 typedef std::wstring tstring;
 typedef std::wstringbuf tstringbuf;
 typedef std::wstringstream tstringstream;
@@ -91,26 +76,26 @@ typedef std::stringbuf tstringbuf;
 typedef std::stringstream tstringstream;
 #define tcout std::cout
 #define tcin std::cin
-#endif
+#endif*/
 
 
 namespace GDEMU {
 
 /**
- * SystemWindowsClass
- * \brief SystemWindowsClass
- * \date 2011-05-25 19:28GMT
+ * SystemSdlClass
+ * \brief SystemSdlClass
+ * \date 2012-06-27 11:28GMT
  * \author Jan Boon (Kaetemi)
  */
-class SystemWindowsClass
+class SystemSdlClass
 {
 private:
-	HWND m_HWnd;
+	/*HWND m_HWnd;*/
 
 public:
-	SystemWindowsClass() : m_HWnd(NULL) { }
+	SystemSdlClass() /*: m_HWnd(NULL)*/ { }
 
-	static tstring GetWin32ErrorString(DWORD dwError);
+	/*static tstring GetWin32ErrorString(DWORD dwError);
 	static tstring GetWin32LastErrorString();
 	static void Error(const tstring &message);
 	static void Warning(const tstring &message);
@@ -124,19 +109,19 @@ public:
 	static tstring ToTString(const std::string &s);
 	static tstring ToTString(const std::wstring &s);
 	static std::wstring ToWString(const tstring &s);
-	static std::string ToAString(const tstring &s);
+	static std::string ToAString(const tstring &s);*/
 
 private:
-	SystemWindowsClass(const SystemWindowsClass &);
-	SystemWindowsClass &operator=(const SystemWindowsClass &);
+	SystemSdlClass(const SystemSdlClass &);
+	SystemSdlClass &operator=(const SystemSdlClass &);
 
-}; /* class SystemWindowsClass */
+}; /* class SystemSdlClass */
 
-extern SystemWindowsClass SystemWindows;
+extern SystemSdlClass SystemSdl;
 
 } /* namespace GDEMU */
 
-#endif /* #ifndef GDEMU_SYSTEM_WINDOWS_H */
-#endif /* #ifndef GDEMU_SDL */
+#endif /* #ifndef GDEMU_SYSTEM_SDL_H */
+#endif /* #ifdef GDEMU_SDL */
 
 /* end of file */

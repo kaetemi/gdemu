@@ -1,14 +1,14 @@
 /**
  * AudioDriverClass
  * $Id$
- * \file gdemu_audio_driver_wasapi.cpp
+ * \file gdemu_audio_driver_sdl.cpp
  * \brief AudioDriverClass
- * \date 2011-05-29 19:38GMT
+ * \date 2012-06-27 11:45GMT
  * \author Jan Boon (Kaetemi)
  */
 
 /*
- * Copyright (C) 2011  Jan Boon (Kaetemi)
+ * Copyright (C) 2011-2012  Jan Boon (Kaetemi)
  *
  * This file is part of GAMEDUINO EMULATOR.
  * GAMEDUINO EMULATOR is free software: you can redistribute it and/or
@@ -26,13 +26,13 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GDEMU_SDL
+#ifdef GDEMU_SDL
 
 // #include <...>
 #include "gdemu_audio_driver.h"
 
 // System includes
-#include "gdemu_system_windows.h"
+#include "gdemu_system_sdl.h"
 
 // Project includes
 
@@ -41,7 +41,7 @@
 namespace GDEMU {
 
 AudioDriverClass AudioDriver;
-
+/*
 #define REFTIMES_PER_SEC  10000000
 #define REFTIMES_PER_MILLISEC  10000
 
@@ -58,9 +58,9 @@ static double s_TestRad;
 
 #define D_GDEMU_AUDIOCHANNELS 2
 #define D_GDEMU_AUDIOBITS 16
-
+*/
 void AudioDriverClass::begin()
-{
+{/*
 	const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 	const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 	const IID IID_IAudioClient = __uuidof(IAudioClient);
@@ -102,7 +102,7 @@ void AudioDriverClass::begin()
 
 	hr = s_AudioClient->Start();
 	if (hr) SystemWindows.ErrorHResult(hr);
-
+*/
 	// done
 }
 
@@ -140,12 +140,13 @@ bool AudioDriverClass::update()
 }
 
 int AudioDriverClass::getFrequency()
-{
-	return s_AudioFrequency;
+{/*
+	return s_AudioFrequency;*/
+	return 0;
 }
 
 void AudioDriverClass::beginBuffer(short **buffer, int *samples)
-{
+{/*
 	HRESULT hr;
 
 	unsigned int numFramesPadding;
@@ -164,15 +165,15 @@ void AudioDriverClass::beginBuffer(short **buffer, int *samples)
 	{
 		hr = s_AudioRenderClient->GetBuffer(s_NumFramesAvailable, (BYTE **)buffer);
 		if (hr) SystemWindows.ErrorHResult(hr);
-	}
+	}*/
 }
 
 void AudioDriverClass::endBuffer()
-{
+{/*
 	HRESULT hr;
 
 	hr = s_AudioRenderClient->ReleaseBuffer(s_NumFramesAvailable, 0);
-	if (hr) SystemWindows.ErrorHResult(hr);
+	if (hr) SystemWindows.ErrorHResult(hr);*/
 }
 
 void AudioDriverClass::end()
@@ -182,6 +183,6 @@ void AudioDriverClass::end()
 
 } /* namespace GDEMU */
 
-#endif /* #ifndef GDEMU_SDL */
+#endif /* #ifdef GDEMU_SDL */
 
 /* end of file */
