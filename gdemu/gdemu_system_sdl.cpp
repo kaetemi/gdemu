@@ -79,6 +79,7 @@ void SystemClass::_begin()
 	//QueryPerformanceFrequency(&s_PerformanceFrequency);
 	//QueryPerformanceCounter(&s_PerformanceCounterBegin);
 	//InitializeCriticalSection(&s_CriticalSection);
+	SDL_Init(0);
 }
 
 void SystemClass::_update()
@@ -88,6 +89,7 @@ void SystemClass::_update()
 
 void SystemClass::_end()
 {
+	SDL_Quit();
 	//DeleteCriticalSection(&s_CriticalSection);
 }
 /*
@@ -325,6 +327,18 @@ void SystemClass::delayMicros(int us)
 	//Sleep(us / 1000);
 }
 
+
+void SystemSdlClass::Error(char *message)
+{
+	printf("Error: %s", message);
+	exit(1);
+}
+
+void SystemSdlClass::ErrorSdl()
+{
+	printf("ErrorSdl: %s", SDL_GetError());
+	exit(1);
+}
 
 /*
 tstring SystemSdlClass::GetWin32ErrorString(DWORD dwError)
