@@ -8,7 +8,7 @@
  */
 
 /*
- * Copyright (C) 2011  Jan Boon (Kaetemi)
+ * Copyright (C) 2011-2012  Jan Boon (Kaetemi)
  *
  * This file is part of GAMEDUINO EMULATOR.
  * GAMEDUINO EMULATOR is free software: you can redistribute it and/or
@@ -74,10 +74,11 @@ namespace {
 		System.makeRealtimePriorityThread();
 
 		double targetSeconds = System.getSeconds();
-		double deltaSeconds = 1.0 / 72.0;
 
 		for (;;)
 		{
+			double deltaSeconds = GameduinoSPI.getRefreshTimeSeconds();
+
 			//printf("main thread\n");
 			System.makeRealtimePriorityThread();
 

@@ -7,20 +7,20 @@
  * \author Jan Boon (Kaetemi)
  */
 
-/* 
- * Copyright (C) 2011  Jan Boon (Kaetemi)
- * 
+/*
+ * Copyright (C) 2011-2012  Jan Boon (Kaetemi)
+ *
  * This file is part of GAMEDUINO EMULATOR.
  * GAMEDUINO EMULATOR is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * GAMEDUINO EMULATOR is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty
  * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with GAMEDUINO EMULATOR; see the file COPYING.  If not, see
  * <http://www.gnu.org/licenses/>.
@@ -84,6 +84,8 @@ static uint8_t s_SampleR2[D_GDEMU_SAMPLEBUFFER + 1];
 static int s_SampleRW = 1;
 static int s_SampleRR = 0;
 
+double GameduinoSPIClass::s_RefreshTime = 1.0 / 72.0;
+
 void GameduinoSPIClass::begin()
 {
 	GDEMU::s_GdRam[IDENT] = 0x6D;
@@ -103,7 +105,7 @@ void GameduinoSPIClass::begin()
 
 void GameduinoSPIClass::end()
 {
-	
+
 }
 
 void GameduinoSPIClass::setVBlank(uint8_t value)
@@ -151,7 +153,7 @@ short GameduinoSPIClass::getNextSampleL()
 		{
 			s_SampleLR = nextL;
 		}
-		
+
 		return result;
 	}
 	else
@@ -171,7 +173,7 @@ short GameduinoSPIClass::getNextSampleR()
 		{
 			s_SampleRR = nextR;
 		}
-		
+
 		return result;
 	}
 	else
@@ -218,7 +220,7 @@ uint8_t inline GameduinoSPIClass::readRam(int offset)
 				// printf("anti read spam\n");
 				System.switchThread(); // die :)
 				// delay(0); // die :)
-				break; 
+				break;
 			}
 		}
 	}
@@ -251,7 +253,7 @@ uint8_t inline GameduinoSPIClass::readRam(int offset)
 void inline GameduinoSPIClass::writeRam(int offset, uint8_t value)
 {
 	s_GdRam[offset] = value;
-	
+
 	switch (offset)
 	{
 	case SAMPLE_L:
@@ -281,6 +283,16 @@ void inline GameduinoSPIClass::writeRam(int offset, uint8_t value)
 		if (value != s_LastReturnedJ1Reset)
 			s_J1ResetPulsedSinceLastRequest = true;
 		break;
+	case VIDEO_MODE:
+		switch (value)
+		{
+		case MODE_800x600_72:
+			s_RefreshTime = 1.0 / 72.0;
+			break;
+		case MODE_800x600_60:
+			s_RefreshTime = 1.0 / 60.0;
+			break;
+		}
 	}
 }
 
@@ -301,7 +313,7 @@ short GameduinoSPIClass::readRam16(int offset)
 		else
 			s_LastReturnedVBlank16 = s_GdRam[VBLANK];
 		return s_LastReturnedVBlank16;
-		}		
+		}
 	case 0x8012: // RANDOM
 		return (rand() & 0xFF) | ((rand() & 0xFF) << 8);
 	case 0x800e: // P2_V
@@ -313,7 +325,7 @@ short GameduinoSPIClass::readRam16(int offset)
 
 	short result = ((short *)(void *)&s_GdRam[offset])[0];
 	if (offset < 0x8000) result &= 0xFF;
-	
+
 	// printf("read8j1: %i @ %i\n", (int)result, offset);//(offset << 1));
 
 	return result;

@@ -74,8 +74,14 @@ extern GDClass GD;
 #define SAMPLE_L      0x2810
 #define SAMPLE_R      0x2812
 
-#define MODULATED     0x2814
-#define UNMODULATED   0x2815
+// #define MODULATED     0x2814
+// #define UNMODULATED   0x2815
+
+#define MODULATOR     0x2814
+#define VIDEO_MODE    0x2815
+
+#define MODE_800x600_72   0
+#define MODE_800x600_60   1
 
 #define SCREENSHOT_Y  0x281e
 

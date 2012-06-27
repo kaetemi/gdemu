@@ -37,8 +37,10 @@ void GDClass::begin() {
   GD.wr16(SAMPLE_L, 0);
   GD.wr16(SAMPLE_R, 0);
   GD.wr16(SCREENSHOT_Y, 0);
-  GD.wr(MODULATED, 0);
-  GD.wr(UNMODULATED, 0);
+  //GD.wr(MODULATED, 0);
+  //GD.wr(UNMODULATED, 0);
+  GD.wr(MODULATOR, 0);
+  GD.wr(VIDEO_MODE, 0);
   int16_t i;
   __wstart(RAM_SPR);
   for (i = 0; i < 512; i++)
@@ -53,7 +55,7 @@ void GDClass::__start(uint16_t addr) // start an SPI transaction to addr
 {
   digitalWrite(SS_PIN, LOW);
   SPI.transfer(highByte(addr));
-  SPI.transfer(lowByte(addr));  
+  SPI.transfer(lowByte(addr));
 }
 
 void GDClass::__wstart(uint16_t addr) // start an SPI write transaction to addr
