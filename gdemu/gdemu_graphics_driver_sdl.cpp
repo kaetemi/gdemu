@@ -50,10 +50,30 @@ namespace GDEMU {
 
 
 GraphicsDriverClass GraphicsDriver;
+
+namespace {
+
 static argb1555 s_BufferARGB1555[GDEMU_WINDOW_WIDTH * GDEMU_WINDOW_HEIGHT];
 
 SDL_Surface *s_Screen = NULL;
 SDL_Surface *s_Buffer = NULL;
+
+SDL_mutex *s_WaitFlipMutex = NULL;
+SDL_cond *s_WaitFlip = NULL;
+bool s_Running = false;
+
+int flipThread(void *)
+{
+	SDL_CondWait(s_WaitFlip, s_WaitFlipMutex);
+	while (s_Running)
+	{
+		if (SDL_Flip(s_Screen) < 0)
+			SystemSdlClass::ErrorSdl();
+		SDL_CondWait(s_WaitFlip, s_WaitFlipMutex);
+	}
+}
+
+} /* anonymous namespace */
 
 argb1555 *GraphicsDriverClass::getBufferARGB1555()
 {
@@ -64,7 +84,7 @@ void GraphicsDriverClass::begin()
 {
 	SDL_InitSubSystem(SDL_INIT_VIDEO);
 
-	s_Screen = SDL_SetVideoMode(GDEMU_WINDOW_WIDTH * 2, GDEMU_WINDOW_HEIGHT * 2, 15, SDL_SWSURFACE);
+	s_Screen = SDL_SetVideoMode(GDEMU_WINDOW_WIDTH * 2, GDEMU_WINDOW_HEIGHT * 2, 15, SDL_SWSURFACE | SDL_ASYNCBLIT);
 	if (s_Screen == NULL) SystemSdlClass::ErrorSdl();
 
 	SDL_WM_SetCaption(GDEMU_WINDOW_TITLE, NULL);
@@ -81,6 +101,14 @@ void GraphicsDriverClass::begin()
 
 	s_Buffer = SDL_CreateRGBSurfaceFrom(s_BufferARGB1555, GDEMU_WINDOW_WIDTH, GDEMU_WINDOW_HEIGHT, bpp, 2 * GDEMU_WINDOW_WIDTH, rmask, gmask, bmask, amask);
 	if (s_Buffer == NULL) SystemSdlClass::ErrorSdl();
+
+	s_Running = true;
+
+	s_WaitFlip = SDL_CreateCond();
+	s_WaitFlipMutex = SDL_CreateMutex();
+	SDL_CreateThread(flipThread, NULL);
+	// TODO - Error handling
+
 }
 
 bool GraphicsDriverClass::update()
@@ -100,6 +128,10 @@ bool GraphicsDriverClass::update()
 void GraphicsDriverClass::end()
 {
 	// ... TODO ...
+	s_Running = false;
+	SDL_CondBroadcast(s_WaitFlip);
+	// TODO WAIT FOR THREAD!!!!!
+	// TODO DESTROY COND MUTEX
 
 	SDL_FreeSurface(s_Buffer);
 	SDL_FreeSurface(s_Screen);
@@ -117,11 +149,25 @@ void GraphicsDriverClass::renderBuffer()
 	destRect.w = GDEMU_WINDOW_WIDTH * 2;
 	destRect.h = GDEMU_WINDOW_HEIGHT * -2;*/
 
+	// FIXME: This SDL_SoftStretch is terribly slow!
 	if (SDL_SoftStretch(s_Buffer, NULL, s_Screen, NULL) < 0)
 		SystemSdlClass::ErrorSdl();
 
-	if (SDL_Flip(s_Screen) < 0)
-		SystemSdlClass::ErrorSdl();
+	//if (SDL_Flip(s_Screen) < 0)
+	//	SystemSdlClass::ErrorSdl();
+	//SDL_UpdateRect(s_Screen, 0, 0, 0, 0);
+	SDL_CondBroadcast(s_WaitFlip);
+
+	std::stringstream newTitle;
+	newTitle << GDEMU_WINDOW_TITLE;
+	if (GameduinoSPI.getRam()[0x2809] == 0)
+		newTitle << (" [+J1]");
+	newTitle << (" [FPS: ");
+	newTitle << System.getFPSSmooth();
+	newTitle << (" (");
+	newTitle << System.getFPS();
+	newTitle << (")]");
+	SDL_WM_SetCaption(newTitle.str().c_str(), NULL);
 
 	/*
 	// Render bitmap to buffer
