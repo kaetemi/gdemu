@@ -7,20 +7,20 @@
  * \author Jan Boon (Kaetemi)
  */
 
-/* 
+/*
  * Copyright (C) 2011  Jan Boon (Kaetemi)
- * 
+ *
  * This file is part of GAMEDUINO EMULATOR.
  * GAMEDUINO EMULATOR is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * GAMEDUINO EMULATOR is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty
  * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with GAMEDUINO EMULATOR; see the file COPYING.  If not, see
  * <http://www.gnu.org/licenses/>.
@@ -69,8 +69,10 @@ static inline void writeUInt16(unsigned char *gameduinoRam, int offset, uint16_t
 
 void GraphicsMachineClass::process()
 {
+	// printf("go\n");
+
 	argb1555 *screenArgb1555 = GraphicsDriver.getBufferARGB1555();
-	unsigned char *gameduinoRam = GameduinoSPI.getRam();	
+	unsigned char *gameduinoRam = GameduinoSPI.getRam();
 	int *gameduinoRam32 = (int *)(void *)gameduinoRam;
 
 	// clear collision ram
@@ -96,7 +98,7 @@ void GraphicsMachineClass::process()
 		{
 			int scrollX = readUInt16(gameduinoRam, SCROLL_X);
 			int scrollY = readUInt16(gameduinoRam, SCROLL_Y);
-			
+
 			int gridLineY = scrollY + y;
 			gridLineY %= 512;
 			int gridY = gridLineY / 8;
@@ -107,7 +109,7 @@ void GraphicsMachineClass::process()
 			int gridXEnd = gridRowX/ 8;
 			int gridXBegin = gridXEnd + 50;
 			int charX = 7 - (gridRowX % 8);
-			
+
 			for (int gridX = gridXBegin, x = 399; x >= 0; --gridX)
 			{
 				gridX = (gridX + 64) % 64;
@@ -116,13 +118,13 @@ void GraphicsMachineClass::process()
 
 				int chrIdx = RAM_CHR + (charPic * 16); // 256 * 16 = 4096 bytes
 				int palIdx = RAM_PAL + (charPic * 8);
-				
+
 				unsigned short chrRow = readUInt16Flipped(gameduinoRam, chrIdx + ((charY) * 2));
 				chrRow >>= (charX * 2);
 
 				for (; charX < 8 && x >= 0; ++charX)
 				{
-					int screenOffset = ((299 - y) * /*3 * */400) + ((x) /** 3*/);
+					int screenOffset = ((GraphicsDriver.isUpsideDown() ? (299 - y) : y) * /*3 * */400) + ((x) /** 3*/);
 					unsigned short pixelBits = chrRow & 0x03;
 					argb1555 pixel = readUInt16(gameduinoRam, palIdx + (pixelBits * 2));
 					if (isAlpha1555(pixel)) screenArgb1555[screenOffset] = bgcolor;
@@ -147,19 +149,19 @@ void GraphicsMachineClass::process()
 				int ramSprC32 = ramSpr32 + sprI;
 				int spriteControl = gameduinoRam32[ramSprC32];
 				int yCoord = (((spriteControl >> 16) + 16) & 0x01FF) - 16; // if (ycoord + 16 > 512) ycoord -= 512;
-				
+
 				if (yCoord <= y && yCoord + 15 >= y)
 				{
 					int xCoord = (((spriteControl) + 16) & 0x01FF) - 16;
-					
+
 					if (xCoord < 400 || xCoord + 15 >= 0)
 					{
 						int colIdx = COLLISION + sprI;
 						int imgIdx = RAM_SPRIMG + ((spriteControl >> 17) & 0x3F00);
-						
+
 						int fromX = xCoord < 0 ? -xCoord : 0;
 						int toX = xCoord + 15 >= 400 ? 400 - xCoord : 16;
-						
+
 						int paletteSelect = spriteControl >> 12;
 						int paletteIdx;
 						int pixelColorShiftRight;
@@ -194,23 +196,23 @@ void GraphicsMachineClass::process()
 						for (int xd = fromX; xd < toX; ++xd)
 						{
 							int x = xd + xCoord;
-							int screenOffset = ((299 - y) * /*3 * */400) + ((x) /** 3*/);
+							int screenOffset = ((GraphicsDriver.isUpsideDown() ? (299 - y) : y) * /*3 * */400) + ((x) /** 3*/);
 
 							int screenCollOffset = x;
-							
+
 							int imgX = xd;
 							int imgY = y - yCoord;
-							
+
 							if (spriteControl & 0x0200) { int ix = imgX; imgX = imgY; imgY = ix; } // flip x y
 							if (spriteControl & 0x0400) imgX = 15 - imgX; // neg x
 							if (spriteControl & 0x0800) imgY = 15 - imgY; // neg y
-							
+
 							int imageOffset = (16 * imgY) + imgX;
 							int pixelColor = gameduinoRam[imgIdx + imageOffset];
-							
-							argb1555 argbColor = readUInt16(gameduinoRam, paletteIdx 
+
+							argb1555 argbColor = readUInt16(gameduinoRam, paletteIdx
 								+ (((pixelColor >> pixelColorShiftRight) & pixelColorMask) << 1));
-							
+
 							if (!isAlpha1555(argbColor))
 							{
 								{
@@ -223,13 +225,13 @@ void GraphicsMachineClass::process()
 											gameduinoRam[colIdx] = lineColl[screenCollOffset];
 										}
 									}
-									// else 
+									// else
 									{
 										// QUESTION: OVERWRITE PREVIOUS SPRITE IN COLLISION CHECK BUFFER OR NOT?
 										lineColl[screenCollOffset] = sprI;
 									}
 								}
-							
+
 								screenArgb1555[screenOffset] = argbColor;
 							}
 						}
@@ -243,7 +245,7 @@ void GraphicsMachineClass::process()
 		}
 
 		//writeUInt16(gameduinoRam, YLINE, y + 1);
-		
+
 		// screenshot support
 		if (GameduinoSPI.isScreenshotRequested())
 		{
@@ -258,7 +260,7 @@ void GraphicsMachineClass::process()
 	for (int y = 300; y < 333; ++y)
 	{
 		writeUInt16(gameduinoRam, YLINE, y);
-		
+
 		// for more raster chasing purposes
 		if (!J1.isResetting())
 			J1.execute(64, 0);

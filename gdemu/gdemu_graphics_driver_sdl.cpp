@@ -32,26 +32,19 @@
 #include "gdemu_graphics_driver.h"
 
 // System includes
-#include "gdemu_system_windows.h"
 #include "gdemu_system.h"
+#include "gdemu_system_sdl.h"
 #include "gdemu_gameduino_spi.h"
 
 // Project includes
 
 using namespace std;
 
-#define GDEMU_WINDOW_TITLE TEXT("Gameduino Emulator")
+#define GDEMU_WINDOW_TITLE "Gameduino Emulator"
 #define GDEMU_WINDOW_WIDTH 400
 #define GDEMU_WINDOW_HEIGHT 300
 #define GDEMU_WINDOW_RATIO (4.0f / 3.0f)
 #define GDEMU_WINDOW_KEEPRATIO 1
-
-/*
-#define GDEMU_WINDOW_CLASS_NAME TEXT("GDEMUGraphicsDriver")
-
-// Getting more CPU usage with StretchDIBits for some reason, so I don't use it.
-#define GDEMU_GRAPHICS_USE_STRETCHDIBITS 0
-*/
 
 namespace GDEMU {
 
@@ -59,174 +52,78 @@ namespace GDEMU {
 GraphicsDriverClass GraphicsDriver;
 static argb1555 s_BufferARGB1555[GDEMU_WINDOW_WIDTH * GDEMU_WINDOW_HEIGHT];
 
-
-/*
-static HINSTANCE s_HInstance = NULL;
-static HWND s_HWnd = NULL;
-//static int s_ViewWidth, s_ViewHeight;
-//static float s_AspectRatio;
-//static bool s_KeepRatio;
-static std::map<UINT, WNDPROC> s_WindowProcedures;
-//static ULONG_PTR s_GdiplusToken;
-#if !GDEMU_GRAPHICS_USE_STRETCHDIBITS
-static HBITMAP s_Buffer = NULL;
-static HDC s_HDC = NULL;//, m_WindowGraphics;
-#endif
-//static Gdiplus::Graphics *m_GraphicsPtr;
-
-
-
-BITMAPINFO s_BitInfo;
-*/
-
+SDL_Surface *s_Screen = NULL;
+SDL_Surface *s_Buffer = NULL;
 
 argb1555 *GraphicsDriverClass::getBufferARGB1555()
 {
 	return s_BufferARGB1555;
 }
-/*
-static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	//int wmId, wmEvent;
-	PAINTSTRUCT ps;
-	HDC hdc;
-
-	switch (message)
-	{
-	case WM_PAINT:
-		hdc = BeginPaint(hWnd, &ps);
-		// TODO: Add any drawing code here...
-		//testpaint(hdc);
-		EndPaint(hWnd, &ps);
-		break;
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		break;
-	case WM_CLOSE:
-		s_HWnd = NULL;
-		break;
-	case WM_ERASEBKGND:
-		return (LRESULT)1; // Say we handled it.
-	case WM_SYSCOMMAND:
-		if (wParam == SC_KEYMENU) return 0;
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	default:
-		map<UINT, WNDPROC>::iterator it = s_WindowProcedures.find(message);
-		if (it != s_WindowProcedures.end())
-			return it->second(hWnd, message, wParam, lParam);
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-	return (LRESULT)0;
-}*/
 
 void GraphicsDriverClass::begin()
-{/*
-	// Save params
-	s_HInstance = GetModuleHandle(NULL);
+{
+	SDL_InitSubSystem(SDL_INIT_VIDEO);
 
-	// Register Display Class
-	WNDCLASSEX wcex;
-	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpszClassName = GDEMU_WINDOW_CLASS_NAME;
-	wcex.lpfnWndProc = WndProc;
-	wcex.hInstance = s_HInstance;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.lpszMenuName = NULL;
-	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	//wcex.hIcon = LoadIcon(m_HInstance, MAKEINTRESOURCE(IDI_JAZZ));
-	//wcex.hIconSm = LoadIcon(m_HInstance, MAKEINTRESOURCE(IDI_SMALL));
-	wcex.hIcon = NULL;
-	wcex.hIconSm = NULL;
-	if (!RegisterClassEx(&wcex)) SystemWindows.ErrorWin32();
+	s_Screen = SDL_SetVideoMode(GDEMU_WINDOW_WIDTH * 2, GDEMU_WINDOW_HEIGHT * 2, 15, SDL_SWSURFACE);
+	if (s_Screen == NULL) SystemSdlClass::ErrorSdl();
 
-	// Initialize and Show Display Instance
-	DWORD dw_style = WS_OVERLAPPEDWINDOW;
-//#if GDEMUWIN_DISPLAY_ASPECT_RATIO
-//	RECT r; r.top = 0; r.left = 0; r.bottom = (LONG)(((float)GDEMU_WINDOW_WIDTH / aspectRatio) * 2); r.right = GDEMU_WINDOW_WIDTH * 2; // window size
-//#else
-	RECT r; r.top = 0; r.left = 0; r.bottom = GDEMU_WINDOW_HEIGHT * 2; r.right = GDEMU_WINDOW_WIDTH * 2; // window size
-//#endif
-	AdjustWindowRect(&r, dw_style, FALSE);
-	if (s_HWnd) SystemWindows.Error(TEXT("GraphicsDriver.begin()  s_HWnd != NULL"));
-	if (!(s_HWnd = CreateWindow(GDEMU_WINDOW_CLASS_NAME,
-		GDEMU_WINDOW_TITLE, dw_style,
-		CW_USEDEFAULT, 0, r.right - r.left, r.bottom - r.top, // x y w h
-		NULL, NULL, s_HInstance, NULL)))
-		SystemWindows.ErrorWin32();
-	ShowWindow(s_HWnd,  true); // If the window was previously visible, the return value is nonzero.
-	if (!UpdateWindow(s_HWnd)) SystemWindows.ErrorWin32();
+	SDL_WM_SetCaption(GDEMU_WINDOW_TITLE, NULL);
 
-	// Create GDI32 Buffer and Device Context
-#if !GDEMU_GRAPHICS_USE_STRETCHDIBITS
-	HDC hdc = GetDC(s_HWnd);
-	if (s_HDC) SystemWindows.Error(TEXT("GraphicsDriver.begin()  s_HDC != NULL"));
-	s_HDC = CreateCompatibleDC(hdc);
-	if (!s_HDC) SystemWindows.Error(TEXT("GraphicsDriver.begin()  s_HDC == NULL\r\n") + SystemWindows.GetWin32LastErrorString());
-	if (s_Buffer) SystemWindows.Error(TEXT("GraphicsDriver.begin()  s_Buffer != NULL"));
-	s_Buffer = CreateCompatibleBitmap(hdc, GDEMU_WINDOW_WIDTH, GDEMU_WINDOW_HEIGHT);
-	if (!s_Buffer) SystemWindows.Error(TEXT("GraphicsDriver.begin()  s_Buffer == NULL\r\n") + SystemWindows.GetWin32LastErrorString());
-	SelectObject(s_HDC, s_Buffer);
-	ReleaseDC(s_HWnd, hdc);
-#endif
+	Uint32 bpp;
+	Uint32 rmask, gmask, bmask, amask;
 
-	// Verify Maps
-	//if (!Bitmap::m_HBitmaps.empty()) SystemWindows.Error(TEXT("GraphicsDriver.begin()  Bitmap::m_HBitmaps.empty() == false"));
-	if (!s_WindowProcedures.empty()) SystemWindows.Error(TEXT("GraphicsDriver.begin()  s_WindowProcedures.empty() == false"));
+	rmask = 0x001F;
+	gmask = 0x03E0;
+	bmask = 0x7C00;
+	amask = 0x0000;
 
-	// Initialize Bitmap Buffer
-	ZeroMemory(&s_BitInfo, sizeof(s_BitInfo));
-    s_BitInfo.bmiHeader.biSize = sizeof(s_BitInfo.bmiHeader);
-	s_BitInfo.bmiHeader.biWidth = GDEMU_WINDOW_WIDTH;
-    s_BitInfo.bmiHeader.biHeight = GDEMU_WINDOW_HEIGHT;
-    s_BitInfo.bmiHeader.biPlanes = 1;
-    s_BitInfo.bmiHeader.biBitCount = 16; // was 24
-    s_BitInfo.bmiHeader.biCompression = BI_RGB;
+	bpp = 15;
 
-	// Meh
-	SystemWindows.setHWnd(s_HWnd);*/
+	s_Buffer = SDL_CreateRGBSurfaceFrom(s_BufferARGB1555, GDEMU_WINDOW_WIDTH, GDEMU_WINDOW_HEIGHT, bpp, 2 * GDEMU_WINDOW_WIDTH, rmask, gmask, bmask, amask);
+	if (s_Buffer == NULL) SystemSdlClass::ErrorSdl();
 }
 
 bool GraphicsDriverClass::update()
-{/*
-	// Update Window Messages
-	MSG msg;
-	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
+{
+	SDL_Event event;
 
-	return s_HWnd != NULL;*/
+	while ( SDL_PollEvent(&event) ) {
+		switch (event.type) {
+			// don't care about other events
+			case SDL_QUIT:
+				return false;
+		}
+	}
+	return true;
 }
 
 void GraphicsDriverClass::end()
 {
-	/*SystemWindows.setHWnd(NULL);
+	// ... TODO ...
 
-	if (!s_WindowProcedures.empty())
-	{
-		SystemWindows.Debug(TEXT("GraphicsDriver.end() s_WindowProcedures.empty() == false"));
-		s_WindowProcedures.clear();
-	}
+	SDL_FreeSurface(s_Buffer);
+	SDL_FreeSurface(s_Screen);
 
-#if !GDEMU_GRAPHICS_USE_STRETCHDIBITS
-	if (s_HDC) { DeleteDC(s_HDC); s_HDC = NULL; }
-	else SystemWindows.Debug(TEXT("GraphicsDriver.end() s_HDC == NULL"));
-	if (s_Buffer) { DeleteObject(s_Buffer); s_Buffer = NULL; }
-	else SystemWindows.Debug(TEXT("GraphicsDriver.end() s_Buffer == NULL"));
-#endif
-
-	if (s_HWnd) { DestroyWindow(s_HWnd); s_HWnd = NULL; }
-	else SystemWindows.Debug(TEXT("GraphicsDriver.end() s_HWnd == NULL"));
-
-	UnregisterClass(GDEMU_WINDOW_CLASS_NAME, s_HInstance);*/
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
 void GraphicsDriverClass::renderBuffer()
-{/*
+{
+	// TODO: Allow resize and aspect ratio
+
+	/*SDL_Rect destRect;
+	destRect.x = 0;
+	destRect.y = GDEMU_WINDOW_HEIGHT * 2;
+	destRect.w = GDEMU_WINDOW_WIDTH * 2;
+	destRect.h = GDEMU_WINDOW_HEIGHT * -2;*/
+
+	if (SDL_SoftStretch(s_Buffer, NULL, s_Screen, NULL) < 0)
+		SystemSdlClass::ErrorSdl();
+
+	if (SDL_Flip(s_Screen) < 0)
+		SystemSdlClass::ErrorSdl();
+
+	/*
 	// Render bitmap to buffer
 #if !GDEMU_GRAPHICS_USE_STRETCHDIBITS
 	if (!SetDIBitsToDevice(s_HDC, 0, 0,
@@ -306,26 +203,6 @@ void GraphicsDriverClass::renderBuffer()
 	newTitle << TEXT(")]");
 	SetWindowText(s_HWnd, (LPCTSTR)newTitle.str().c_str());*/
 }
-
-/*
-// SET TO NULL WHEN NO LONGER NEEDED
-void setWindowProcedure(UINT message, WNDPROC procedure)
-{
-	map<UINT, WNDPROC>::iterator it = s_WindowProcedures.find(message);
-	if (procedure)
-	{
-		if (it != s_WindowProcedures.end())
-			SystemWindows.Debug(TEXT("setWindowProcedure  WindowProcedure already exists, replacing"));
-		s_WindowProcedures[message] = procedure;
-	}
-	else
-	{
-		if (it == s_WindowProcedures.end())
-			SystemWindows.Debug(TEXT("setWindowProcedure  WindowProcedure does not exist"));
-		else s_WindowProcedures.erase(it);
-	}
-}
-*/
 
 } /* namespace GDEMU */
 

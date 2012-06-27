@@ -56,7 +56,7 @@
 #include <map>
 #include <fstream>
 #include <iostream>
-#include <cmath>
+//#include <cmath>
 
 // DirectInput Headers
 /*#define DIRECTINPUT_VERSION 0x0800
@@ -110,6 +110,9 @@ public:
 	static tstring ToTString(const std::wstring &s);
 	static std::wstring ToWString(const tstring &s);
 	static std::string ToAString(const tstring &s);*/
+
+	static void Error(char *message);
+	static void ErrorSdl();
 
 private:
 	SystemSdlClass(const SystemSdlClass &);
