@@ -7,20 +7,20 @@
  * \author Jan Boon (Kaetemi)
  */
 
-/* 
+/*
  * Copyright (C) 2011  Jan Boon (Kaetemi)
- * 
+ *
  * This file is part of GAMEDUINO EMULATOR.
  * GAMEDUINO EMULATOR is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * GAMEDUINO EMULATOR is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty
  * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with GAMEDUINO EMULATOR; see the file COPYING.  If not, see
  * <http://www.gnu.org/licenses/>.
@@ -60,7 +60,7 @@ int AudioMachineClass::SampleLRBufferFreqHz = 8000;
 void AudioMachineClass::process()
 {
 	s_SecondsPerLRBufferSample = 1.0 / (double)SampleLRBufferFreqHz;
-	
+
 	unsigned char *gameduinoRam = GameduinoSPI.getRam();
 
 	int audioFrequency = AudioDriver.getFrequency();
@@ -111,7 +111,7 @@ void AudioMachineClass::process()
 			int rightAmpI;
 			D_GDEMU_AUDIOFP leftAmp;
 			D_GDEMU_AUDIOFP rightAmp;
-			
+
 			frequency = gameduinoRam[voiceIdx];
 			frequency += (gameduinoRam[voiceIdx + 1] & 0x7F) << 8;
 
@@ -157,7 +157,7 @@ void AudioMachineClass::process()
 							/*for (int i = 0; i < (int)((1.0 + sinValue) * 64); ++i) putchar(' ');
 							putchar('|');
 							putchar('\n');*/
-							
+
 							audRad += addRad;
 							while (audRad > (PI * 2)) audRad -= (PI * 2);
 						}

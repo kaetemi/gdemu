@@ -57,10 +57,10 @@ String::String( const unsigned char value )
     _buffer[1] = 0;
   }
 }
-
+/*
 String::String( const int value, const int base )
 {
-  char buf[33];   
+  char buf[33];
   itoa((signed long)value, buf, base);
   getBuffer( _length = strlen(buf) );
   if ( _buffer != NULL )
@@ -69,7 +69,7 @@ String::String( const int value, const int base )
 
 String::String( const unsigned int value, const int base )
 {
-  char buf[33];   
+  char buf[33];
   ultoa((unsigned long)value, buf, base);
   getBuffer( _length = strlen(buf) );
   if ( _buffer != NULL )
@@ -78,7 +78,7 @@ String::String( const unsigned int value, const int base )
 
 String::String( const long value, const int base )
 {
-  char buf[33];   
+  char buf[33];
   ltoa(value, buf, base);
   getBuffer( _length = strlen(buf) );
   if ( _buffer != NULL )
@@ -87,19 +87,19 @@ String::String( const long value, const int base )
 
 String::String( const unsigned long value, const int base )
 {
-  char buf[33];   
+  char buf[33];
   ultoa(value, buf, 10);
   getBuffer( _length = strlen(buf) );
   if ( _buffer != NULL )
     strcpy( _buffer, buf );
 }
-
+*/
 char String::charAt( unsigned int loc ) const
 {
   return operator[]( loc );
 }
 
-void String::setCharAt( unsigned int loc, const char aChar ) 
+void String::setCharAt( unsigned int loc, const char aChar )
 {
   if(_buffer == NULL) return;
   if(_length > loc) {
@@ -127,7 +127,7 @@ const String & String::operator=( const String &rhs )
     free(_buffer);
     getBuffer( rhs._length );
   }
-  
+
   if ( _buffer != NULL ) {
     _length = rhs._length;
     strcpy( _buffer, rhs._buffer );
@@ -256,7 +256,7 @@ String String::replace( const String& match, const String& replace )
     newString += replace;
     temp = temp.substring( loc + match._length );
   }
-  newString += temp;  
+  newString += temp;
   return newString;
 }
 
@@ -371,10 +371,10 @@ String String::substring( unsigned int left, unsigned int right ) const
   if ( right > _length )
   {
     right = _length;
-  } 
+  }
 
   char temp = _buffer[ right ];  // save the replaced character
-  _buffer[ right ] = '\0';	
+  _buffer[ right ] = '\0';
   String outPut = ( _buffer + left );  // pointer arithmetic
   _buffer[ right ] = temp;  //restore character
   return outPut;
