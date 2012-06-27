@@ -60,13 +60,16 @@ SystemSdlClass SystemSdl;
 
 
 #ifdef WIN32
-static LARGE_INTEGER s_PerformanceFrequency = { 0 };
-static LARGE_INTEGER s_PerformanceCounterBegin = { 0 };
+//static LARGE_INTEGER s_PerformanceFrequency = { 0 };
+//static LARGE_INTEGER s_PerformanceCounterBegin = { 0 };
 
 //static HANDLE s_J1Thread = NULL;
-static HANDLE s_DuinoThread = NULL;
-static HANDLE s_MainThread = NULL;
+//static HANDLE s_DuinoThread = NULL;
+//static HANDLE s_MainThread = NULL;
 #endif
+
+static int s_DuinoThread = 0;
+static int s_MainThread = 0;
 
 //static CRITICAL_SECTION s_CriticalSection;
 
@@ -151,7 +154,7 @@ void SystemClass::makeMainThread()
 		DUPLICATE_SAME_ACCESS))
 		SystemSdl.ErrorWin32();
 #endif
-	// TODO
+	s_MainThread = SDL_ThreadID();
 }
 
 bool SystemClass::isMainThread()
@@ -169,7 +172,7 @@ bool SystemClass::isMainThread()
 		SystemSdl.ErrorWin32();
 	return currentThread == s_MainThread;
 #endif
-	return false; // TODO
+	return SDL_ThreadID() == s_MainThread;
 }
 
 // Duino thread control
@@ -186,7 +189,7 @@ void SystemClass::makeDuinoThread()
 		DUPLICATE_SAME_ACCESS))
 		SystemSdl.ErrorWin32();
 #endif
-	// TODO
+	s_DuinoThread = SDL_ThreadID();
 }
 
 bool SystemClass::isDuinoThread()
@@ -204,7 +207,7 @@ bool SystemClass::isDuinoThread()
 		SystemSdl.ErrorWin32();
 	return currentThread == s_DuinoThread;
 #endif
-	return false; // TODO
+	return SDL_ThreadID() == s_DuinoThread;
 }
 
 void SystemClass::prioritizeDuinoThread()
@@ -229,7 +232,7 @@ void SystemClass::holdDuinoThread()
 	if (0 > SuspendThread(s_DuinoThread))
 		SystemSdl.Error(TEXT("SuspendThread  FAILED"));
 #endif
-// TODO
+// TODO - Important
 }
 
 void SystemClass::resumeDuinoThread()
@@ -238,7 +241,7 @@ void SystemClass::resumeDuinoThread()
 	if (0 > ResumeThread(s_DuinoThread))
 		SystemSdl.Error(TEXT("ResumeThread  FAILED"));
 #endif
-// TODO
+// TODO - Important
 }
 
 
