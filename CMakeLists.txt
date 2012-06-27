@@ -47,3 +47,4 @@ include_directories(
 
 ADD_SUBDIRECTORY(gdemu)
 ADD_SUBDIRECTORY(asteroids)
+ADD_SUBDIRECTORY(ball)
