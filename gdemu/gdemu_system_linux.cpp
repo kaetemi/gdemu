@@ -50,7 +50,9 @@ static pthread_t s_DuinoThread = 0;
 static pthread_t s_MainThread = 0;
 
 static sigset_t s_DuinoSigSet;
-pthread_mutex_t s_DuinoSuspendMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t s_DuinoSuspendMutex = PTHREAD_MUTEX_INITIALIZER;
+
+static time_t s_BeginTime = 0;
 
 void SystemClass::_begin()
 {
@@ -59,6 +61,9 @@ void SystemClass::_begin()
 #endif
 	sigemptyset(&s_DuinoSigSet);
 	sigaddset(&s_DuinoSigSet, SIGUSR1);
+	timespec t;
+	clock_gettime(CLOCK_MONOTONIC, &t);
+	s_BeginTime = t.tv_sec;
 }
 
 void SystemClass::_update()
@@ -190,21 +195,21 @@ double SystemClass::getSeconds()
 {
 	timespec t;
 	clock_gettime(CLOCK_MONOTONIC, &t);
-	return (double)t.tv_sec + (double)t.tv_nsec * 0.000000001;// / 1000000000.0;
+	return (double)(t.tv_sec - s_BeginTime) + (double)t.tv_nsec * 0.000000001;
 }
 
 long SystemClass::getMillis()
 {
 	timespec t;
 	clock_gettime(CLOCK_MONOTONIC, &t);
-	return t.tv_nsec / 1000000 + t.tv_sec * 1000;
+	return t.tv_nsec / 1000000 + (t.tv_sec - s_BeginTime) * 1000;
 }
 
 long SystemClass::getMicros()
 {
 	timespec t;
 	clock_gettime(CLOCK_MONOTONIC, &t);
-	return (t.tv_nsec / 1000) + t.tv_sec * 1000000;
+	return (t.tv_nsec / 1000) + (t.tv_sec - s_BeginTime) * 1000000;
 }
 
 long SystemClass::getFreqTick(int hz)
