@@ -59,13 +59,6 @@ int AudioMachineClass::SampleLRBufferFreqHz = 8000;
 
 void AudioMachineClass::process()
 {
-	s_SecondsPerLRBufferSample = 1.0 / (double)SampleLRBufferFreqHz;
-
-	unsigned char *gameduinoRam = GameduinoSPI.getRam();
-
-	int audioFrequency = AudioDriver.getFrequency();
-	double secondsPerSample = 1.0 / (double)audioFrequency;
-
 	short *audioBuffer;
 	int samples;
 
@@ -73,102 +66,113 @@ void AudioMachineClass::process()
 
 	if (audioBuffer != NULL)
 	{
-		// sample (with quick n dirty resampling with horrible ringing) :)
-		for (int s = 0; s < samples; ++s)
-		{
-			if (SampleLRBufferEnabled)
-			{
-				while (s_SecondsPassedForLRBufferSample >= s_SecondsPerLRBufferSample)
-				{
-					s_SecondsPassedForLRBufferSample -= s_SecondsPerLRBufferSample;
-					/*unsigned short sampleL = GameduinoSPI.getNextSampleL();
-					unsigned short sampleR = GameduinoSPI.getNextSampleR();
-					if (sampleL == 0) sampleL = 0x8000; // because!
-					if (sampleR == 0) sampleR = 0x8000;
-					s_SampleL = (short)((int)sampleL - 0x8000);
-					s_SampleR = (short)((int)sampleR - 0x8000);*/
-					s_SampleL = GameduinoSPI.getNextSampleL();
-					s_SampleR = GameduinoSPI.getNextSampleR();
-				}
-				audioBuffer[s * 2] = s_SampleL;
-				audioBuffer[(s * 2) + 1] = s_SampleR;
-				s_SecondsPassedForLRBufferSample += secondsPerSample;
-			}
-			else
-			{
-				audioBuffer[s * 2] = GameduinoSPI.getNextSampleL();
-				audioBuffer[(s * 2) + 1] = GameduinoSPI.getNextSampleR();
-			}
-		}
-		// voices
-		for (int i = 0; i < 64; ++i)
-		{
-			int voiceIdx = VOICES + (4 * i);
-
-			int frequency;
-			bool whiteNoise;
-			int leftAmpI;
-			int rightAmpI;
-			D_GDEMU_AUDIOFP leftAmp;
-			D_GDEMU_AUDIOFP rightAmp;
-
-			frequency = gameduinoRam[voiceIdx];
-			frequency += (gameduinoRam[voiceIdx + 1] & 0x7F) << 8;
-
-			if (frequency)
-			{
-				whiteNoise = (gameduinoRam[voiceIdx + 1] & 0x80) == 0x80;
-				leftAmpI = gameduinoRam[voiceIdx + 2];
-				leftAmpI *= D_GDEMU_AUDIOAMP;
-				leftAmp = (D_GDEMU_AUDIOFP)leftAmpI;
-				rightAmpI = gameduinoRam[voiceIdx + 3];
-				rightAmpI *= D_GDEMU_AUDIOAMP;
-				rightAmp = (D_GDEMU_AUDIOFP)rightAmpI;
-
-				if (leftAmpI || rightAmpI)
-				{
-					if (whiteNoise)
-					{
-						const int randSub = RAND_MAX * 6;
-						const int ampDiv = RAND_MAX * 6;
-						for (int s = 0; s < samples; ++s)
-						{
-							// QUESTION: DOES THE WHITE NOISE TAKE FREQUENCY INTO ACCOUNT?
-							int noiseValue = rand() + rand() + rand() + rand() + rand() + rand() + rand() + rand() + rand() + rand() + rand() + rand() - randSub;
-							int noiseValueLeft = noiseValue * leftAmpI;
-							int noiseValueRight = noiseValue * rightAmpI;
-							noiseValueLeft /= ampDiv;
-							noiseValueRight /= ampDiv;
-							audioBuffer[s * 2] += (short)(noiseValueLeft);
-							audioBuffer[(s * 2) + 1] += (short)(noiseValueRight);
-						}
-					}
-					else
-					{
-						D_GDEMU_AUDIOFP addRad = (D_GDEMU_AUDIOFP)PI / (D_GDEMU_AUDIOFP)audioFrequency * (D_GDEMU_AUDIOFP)0.5 * (D_GDEMU_AUDIOFP)frequency;
-						D_GDEMU_AUDIOFP audRad = s_AudioRad[i];
-
-						for (int s = 0; s < samples; ++s)
-						{
-							D_GDEMU_AUDIOFP sinValue = sin(audRad);
-							audioBuffer[s * 2] += (short)(sinValue * leftAmp);
-							audioBuffer[(s * 2) + 1] += (short)(sinValue * rightAmp);
-
-							/*for (int i = 0; i < (int)((1.0 + sinValue) * 64); ++i) putchar(' ');
-							putchar('|');
-							putchar('\n');*/
-
-							audRad += addRad;
-							while (audRad > (PI * 2)) audRad -= (PI * 2);
-						}
-
-						s_AudioRad[i] = audRad;
-					}
-				}
-			}
-		}
-
+		process(audioBuffer, samples);
 		AudioDriver.endBuffer();
+	}
+}
+
+void AudioMachineClass::process(short *audioBuffer, int samples)
+{
+	s_SecondsPerLRBufferSample = 1.0 / (double)SampleLRBufferFreqHz;
+
+	unsigned char *gameduinoRam = GameduinoSPI.getRam();
+
+	int audioFrequency = AudioDriver.getFrequency();
+	double secondsPerSample = 1.0 / (double)audioFrequency;
+
+	// sample (with quick n dirty resampling with horrible ringing) :)
+	for (int s = 0; s < samples; ++s)
+	{
+		if (SampleLRBufferEnabled)
+		{
+			while (s_SecondsPassedForLRBufferSample >= s_SecondsPerLRBufferSample)
+			{
+				s_SecondsPassedForLRBufferSample -= s_SecondsPerLRBufferSample;
+				/*unsigned short sampleL = GameduinoSPI.getNextSampleL();
+				unsigned short sampleR = GameduinoSPI.getNextSampleR();
+				if (sampleL == 0) sampleL = 0x8000; // because!
+				if (sampleR == 0) sampleR = 0x8000;
+				s_SampleL = (short)((int)sampleL - 0x8000);
+				s_SampleR = (short)((int)sampleR - 0x8000);*/
+				s_SampleL = GameduinoSPI.getNextSampleL();
+				s_SampleR = GameduinoSPI.getNextSampleR();
+			}
+			audioBuffer[s * 2] = s_SampleL;
+			audioBuffer[(s * 2) + 1] = s_SampleR;
+			s_SecondsPassedForLRBufferSample += secondsPerSample;
+		}
+		else
+		{
+			audioBuffer[s * 2] = GameduinoSPI.getNextSampleL();
+			audioBuffer[(s * 2) + 1] = GameduinoSPI.getNextSampleR();
+		}
+	}
+	// voices
+	for (int i = 0; i < 64; ++i)
+	{
+		int voiceIdx = VOICES + (4 * i);
+
+		int frequency;
+		bool whiteNoise;
+		int leftAmpI;
+		int rightAmpI;
+		D_GDEMU_AUDIOFP leftAmp;
+		D_GDEMU_AUDIOFP rightAmp;
+
+		frequency = gameduinoRam[voiceIdx];
+		frequency += (gameduinoRam[voiceIdx + 1] & 0x7F) << 8;
+
+		if (frequency)
+		{
+			whiteNoise = (gameduinoRam[voiceIdx + 1] & 0x80) == 0x80;
+			leftAmpI = gameduinoRam[voiceIdx + 2];
+			leftAmpI *= D_GDEMU_AUDIOAMP;
+			leftAmp = (D_GDEMU_AUDIOFP)leftAmpI;
+			rightAmpI = gameduinoRam[voiceIdx + 3];
+			rightAmpI *= D_GDEMU_AUDIOAMP;
+			rightAmp = (D_GDEMU_AUDIOFP)rightAmpI;
+
+			if (leftAmpI || rightAmpI)
+			{
+				if (whiteNoise)
+				{
+					const long int randSub = (long int)RAND_MAX * 6L;
+					const long int ampDiv = (long int)RAND_MAX * 6L;
+					for (int s = 0; s < samples; ++s)
+					{
+						// QUESTION: DOES THE WHITE NOISE TAKE FREQUENCY INTO ACCOUNT?
+						long int noiseValue = rand() + rand() + rand() + rand() + rand() + rand() + rand() + rand() + rand() + rand() + rand() + rand() - randSub;
+						long int noiseValueLeft = noiseValue * leftAmpI;
+						long int noiseValueRight = noiseValue * rightAmpI;
+						noiseValueLeft /= ampDiv;
+						noiseValueRight /= ampDiv;
+						audioBuffer[s * 2] += (short)(noiseValueLeft);
+						audioBuffer[(s * 2) + 1] += (short)(noiseValueRight);
+					}
+				}
+				else
+				{
+					D_GDEMU_AUDIOFP addRad = (D_GDEMU_AUDIOFP)PI / (D_GDEMU_AUDIOFP)audioFrequency * (D_GDEMU_AUDIOFP)0.5 * (D_GDEMU_AUDIOFP)frequency;
+					D_GDEMU_AUDIOFP audRad = s_AudioRad[i];
+
+					for (int s = 0; s < samples; ++s)
+					{
+						D_GDEMU_AUDIOFP sinValue = sin(audRad);
+						audioBuffer[s * 2] += (short)(sinValue * leftAmp);
+						audioBuffer[(s * 2) + 1] += (short)(sinValue * rightAmp);
+
+						/*for (int i = 0; i < (int)((1.0 + sinValue) * 64); ++i) putchar(' ');
+						putchar('|');
+						putchar('\n');*/
+
+						audRad += addRad;
+						while (audRad > (PI * 2)) audRad -= (PI * 2);
+					}
+
+					s_AudioRad[i] = audRad;
+				}
+			}
+		}
 	}
 }
 
