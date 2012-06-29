@@ -35,7 +35,6 @@ if (CMAKE_BUILD_TYPE STREQUAL "")
   set (CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif ()
 
-
 ########################################################################
 
 link_directories(
@@ -59,4 +58,8 @@ ADD_SUBDIRECTORY(cp437)
 ADD_SUBDIRECTORY(instruments)
 ADD_SUBDIRECTORY(instruments2)
 ADD_SUBDIRECTORY(joytest)
+ADD_SUBDIRECTORY(ikeda)
+ADD_SUBDIRECTORY(knot)
+ADD_SUBDIRECTORY(chua)
 
+########################################################################
