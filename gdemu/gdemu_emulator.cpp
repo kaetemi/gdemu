@@ -196,11 +196,6 @@ namespace {
 
 void EmulatorClass::run(void (*setup)(), void (*loop)(), int flags)
 {
-#if GDEMU_SDL
-	// audio not yet supported
-	flags &= ~GDEMU::EmulatorEnableAudio;
-#endif
-
 	s_Setup = setup;
 	s_Loop = loop;
 	s_Flags = flags;
