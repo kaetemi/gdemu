@@ -198,7 +198,6 @@ void EmulatorClass::run(void (*setup)(), void (*loop)(), int flags)
 {
 #if GDEMU_SDL
 	// audio not yet supported
-	// neither is input :)
 	flags &= ~GDEMU::EmulatorEnableAudio;
 #endif
 
@@ -236,6 +235,7 @@ void EmulatorClass::run(void (*setup)(), void (*loop)(), int flags)
 		#pragma omp master
 		{
 			masterThread();
+			s_MasterRunning = false;
 		}
 
 		// arduino
