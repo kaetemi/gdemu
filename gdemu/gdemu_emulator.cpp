@@ -255,6 +255,11 @@ void EmulatorClass::run(void (*setup)(), void (*loop)(), int flags)
 	System.end();
 }
 
+void EmulatorClass::setJ1RasterChasingCycles(int insnLimit)
+{
+	g_J1RasterChasingCycles = insnLimit;
+}
+
 } /* namespace GDEMU */
 
 /* end of file */

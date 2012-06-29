@@ -48,6 +48,8 @@ namespace GDEMU {
 GraphicsMachineClass GraphicsMachine;
 static unsigned char lineColl[400];
 
+int g_J1RasterChasingCycles = 256;
+
 static inline int isAlpha1555(unsigned short argb1555) { return (argb1555 & 0x8000); }
 
 static inline uint16_t readUInt16(unsigned char *gameduinoRam, int offset)
@@ -89,7 +91,7 @@ void GraphicsMachineClass::process()
 
 		// for raster chasing purposes
 		if (!J1.isResetting())
-			J1.execute(256, 0);
+			J1.execute(g_J1RasterChasingCycles, 0);
 
 		memset(lineColl, 0xFF, 400);
 		argb1555 bgcolor = readUInt16(gameduinoRam, BG_COLOR); // only support one bgcolor per line, timing is not fine enough atm
