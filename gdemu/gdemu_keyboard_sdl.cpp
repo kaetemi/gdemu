@@ -32,6 +32,8 @@
 #include "gdemu_keyboard.h"
 
 // System includes
+#include <vector>
+#include <SDL.h>
 
 // Project includes
 #include "gdemu_system_windows.h"
@@ -83,7 +85,29 @@ void KeyboardClass::begin()
 }
 
 void KeyboardClass::update()
-{/*
+{
+	Uint8 *keystate = SDL_GetKeyState(NULL);
+	digitalWrite(GDEMU_DIGITAL_LEFT, keystate[SDLK_LEFT] ? LOW : HIGH);
+	digitalWrite(GDEMU_DIGITAL_RIGHT, keystate[SDLK_RIGHT] ? LOW : HIGH);
+	digitalWrite(GDEMU_DIGITAL_UP, keystate[SDLK_UP] ? LOW : HIGH);
+	digitalWrite(GDEMU_DIGITAL_DOWN, keystate[SDLK_DOWN] ? LOW : HIGH);
+	digitalWrite(GDEMU_DIGITAL_SHOOT, keystate[SDLK_SPACE] ? LOW : HIGH);
+
+	uint16_t analogX = 511;
+	uint16_t analogY = 511;
+	if (keystate[SDLK_q] || keystate[SDLK_a])
+		analogX -= 511;
+	if (keystate[SDLK_d])
+		analogX += 511;
+	if (keystate[SDLK_s])
+		analogY -= 511;
+	if (keystate[SDLK_z] || keystate[SDLK_w])
+		analogY += 511;
+
+	System.setAnalogRead(GDEMU_ANALOG_X, analogX);
+	System.setAnalogRead(GDEMU_ANALOG_Y, analogY);
+
+	/*
 	HRESULT hr;
 
     hr = s_lpDIKeyboard->GetDeviceState(sizeof(s_BufferKeyboard),(LPVOID)&s_BufferKeyboard);
