@@ -60,7 +60,7 @@ static byte control()
 #define IMG_ITEM      0     // items 0-4
 #define IMG_PORTAL    5     // room exit
 #define IMG_SWITCH1   6     // the switches for the Kong Beast levels
-#define IMG_SWITCH2   7     
+#define IMG_SWITCH2   7
 #define IMG_GUARD     8     // All guardians, 8 max
 #define IMG_NASTY1    16    // Nasty blocks
 #define IMG_NASTY2    17
@@ -275,7 +275,7 @@ static void loadlevel(PROGMEM struct level *l)
   GD.wr16(RAM_PAL + 8 * CHR_BORDER, COLOR(pgm_read_byte_near(&l->border)));
 
   // background picture: uncompress into scratch then copy to screen
-  prog_uchar *background = (prog_uchar*)pgm_read_word_near(&l->background);
+  prog_uchar *background = (prog_uchar*)pgm_read_byte_near(&l->background);
   uint16_t scratch = 4096 - 512;  // offscreen scratch
   GD.uncompress(scratch, background);
   for (byte y = 0; y < 16; y++)
@@ -759,7 +759,7 @@ static void drive_level(byte t)
     }
   }
 
-  // Animate conveyors: 
+  // Animate conveyors:
   signed char convt = state.conveyordir ? t : -t;
   GD.__wstart(RAM_CHR + 4 * 16 + 2 * 0);  // character 4 line 0
   unpack8(rol8(state.conveyor[0], convt));
@@ -847,7 +847,7 @@ void loop()
       byte con = control();
       byte ychanged = 0;  // if Y block changes must check for landing later
       if (state.jumping) {
-#define JUMP_APEX 9   
+#define JUMP_APEX 9
 #define JUMP_FALL 11  //  1   2   3   4   5   6   7   8   9  10 11
         signed char moves[] = {  -4, -4, -3, -3, -2, -2, -1, -1, 0, 0, 1, 1, 2, 2, 3, 3, 4 };
         byte index = min(sizeof(moves) - 1, state.jumping - 1);
