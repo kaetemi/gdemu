@@ -235,8 +235,8 @@ void SystemClass::delayMicros(int us)
 	int sleepMicros = (long)us;
 	do
 	{
-		if (endMicros >= 1000) sleep(endMicros / 1000);
-		else usleep(endMicros * 1000);
+		if (sleepMicros >= 1000000) sleep(sleepMicros / 1000000);
+		else usleep(sleepMicros);
 		sleepMicros = endMicros - getMicros();
 	} while (sleepMicros > 0);
 
