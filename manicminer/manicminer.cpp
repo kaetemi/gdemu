@@ -275,7 +275,7 @@ static void loadlevel(PROGMEM struct level *l)
   GD.wr16(RAM_PAL + 8 * CHR_BORDER, COLOR(pgm_read_byte_near(&l->border)));
 
   // background picture: uncompress into scratch then copy to screen
-  prog_uchar *background = (prog_uchar*)pgm_read_byte_near(&l->background);
+  prog_uchar *background = (prog_uchar*)pgm_read_word_near(&l->background);
   uint16_t scratch = 4096 - 512;  // offscreen scratch
   GD.uncompress(scratch, background);
   for (byte y = 0; y < 16; y++)
