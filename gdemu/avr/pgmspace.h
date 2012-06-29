@@ -32,17 +32,25 @@
 
 // Project includes
 
+typedef signed char prog_char;
+typedef unsigned char prog_uchar;
+
 #define PROGMEM
 #define pgm_read_byte_near *
 #define pgm_read_byte pgm_read_byte_near
-//inline unsigned short &pgm_read_word_near(void *ptr) { return *((unsigned short *)ptr); }
-#define pgm_read_word_near(ptr) *((unsigned short *)(void *)(ptr))
+inline unsigned short pgm_read_word_near(char *ptr) { return *((unsigned short *)ptr); }
+inline unsigned short pgm_read_word_near(unsigned char *ptr) { return *((unsigned short *)ptr); }
+inline unsigned short pgm_read_word_near(short *ptr) { return *((unsigned short *)ptr); }
+inline unsigned short pgm_read_word_near(unsigned short *ptr) { return *ptr; }
+inline void *pgm_read_word_near(void **ptr) { return *ptr; }
+inline prog_uchar *pgm_read_word_near(prog_uchar **ptr) { return *ptr; }
+inline prog_char *pgm_read_word_near(prog_char **ptr) { return *ptr; }
 #define pgm_read_word pgm_read_word_near
-//inline unsigned int &pgm_read_dword_near(void *ptr) { return *((unsigned int *)ptr); }
-#define pgm_read_dword_near(ptr) *((unsigned int *)(void *)(ptr))
+inline unsigned int pgm_read_dword_near(char *ptr) { return *((unsigned short *)ptr); }
+inline unsigned int pgm_read_dword_near(unsigned char *ptr) { return *((unsigned short *)ptr); }
+inline unsigned int pgm_read_dword_near(int *ptr) { return *((unsigned int *)ptr); }
+inline unsigned int pgm_read_dword_near(unsigned int *ptr) { return *ptr; }
 #define pgm_read_dword pgm_read_dword_near
-typedef signed char prog_char;
-typedef unsigned char prog_uchar;
 
 #endif /* #ifndef PGMSPACE_H */
 
