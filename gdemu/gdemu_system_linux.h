@@ -1,9 +1,9 @@
 /**
- * SystemSdlClass
+ * SystemLinuxClass
  * $Id$
- * \file gdemu_system_sdl.h
- * \brief SystemSdlClass
- * \date 2012-06-27 11:28GMT
+ * \file gdemu_system_linux.h
+ * \brief SystemLinuxClass
+ * \date 2012-06-29 14:50GMT
  * \author Jan Boon (Kaetemi)
  */
 
@@ -26,25 +26,17 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifdef GDEMU_SDL
-#ifndef GDEMU_SYSTEM_SDL_H
-#define GDEMU_SYSTEM_SDL_H
+#ifndef WIN32
+#ifndef GDEMU_SYSTEM_LINUX_H
+#define GDEMU_SYSTEM_LINUX_H
 // #include <...>
 
-// Sdl Headers
-#include <SDL.h>
-/*#include <sdl.h>
-#include <avrt.h>*/
+// Linux Headers
 
-// GDI+
-/*#include <gdiplus.h>*/
-
-// WASAPI
-/*#include <objbase.h>
-#include <mmreg.h>
-#include <mmdeviceapi.h>
-#include <audioclient.h>
-#include <audiopolicy.h>*/
+// SDL
+#ifdef GDEMU_SDL
+#	include <SDL.h>
+#endif
 
 // C Headers
 #include <cstdlib>
@@ -60,29 +52,29 @@
 namespace GDEMU {
 
 /**
- * SystemSdlClass
- * \brief SystemSdlClass
- * \date 2012-06-27 11:28GMT
+ * SystemLinuxClass
+ * \brief SystemLinuxClass
+ * \date 2012-06-29 14:50GMT
  * \author Jan Boon (Kaetemi)
  */
-class SystemSdlClass
+class SystemLinuxClass
 {
 public:
-	SystemSdlClass() { }
+	SystemLinuxClass() { }
 
-	static void ErrorSdl();
+	static void Error(char *message);
 
 private:
-	SystemSdlClass(const SystemSdlClass &);
-	SystemSdlClass &operator=(const SystemSdlClass &);
+	SystemLinuxClass(const SystemLinuxClass &);
+	SystemLinuxClass &operator=(const SystemLinuxClass &);
 
-}; /* class SystemSdlClass */
+}; /* class SystemLinuxClass */
 
-extern SystemSdlClass SystemSdl;
+extern SystemLinuxClass SystemLinux;
 
 } /* namespace GDEMU */
 
-#endif /* #ifndef GDEMU_SYSTEM_SDL_H */
-#endif /* #ifdef GDEMU_SDL */
+#endif /* #ifndef GDEMU_SYSTEM_LINUX_H */
+#endif /* #ifndef WIN32 */
 
 /* end of file */

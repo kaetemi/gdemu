@@ -26,7 +26,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GDEMU_SDL
+#ifdef WIN32
 
 // #include <...>
 #include "gdemu_system_windows.h"
@@ -67,6 +67,9 @@ static HANDLE s_MainThread = NULL;
 
 void SystemClass::_begin()
 {
+#ifdef GDEMU_SDL
+	SDL_Init(0);
+#endif
 	QueryPerformanceFrequency(&s_PerformanceFrequency);
 	QueryPerformanceCounter(&s_PerformanceCounterBegin);
 	//InitializeCriticalSection(&s_CriticalSection);
@@ -80,6 +83,9 @@ void SystemClass::_update()
 void SystemClass::_end()
 {
 	//DeleteCriticalSection(&s_CriticalSection);
+#ifdef GDEMU_SDL
+	SDL_Quit();
+#endif
 }
 /*
 void SystemClass::enterCriticalSection()
@@ -394,6 +400,6 @@ std::wstring SystemWindowsClass::ToWString(const tstring &s)
 
 } /* namespace GDEMU */
 
-#endif /* #ifndef GDEMU_SDL */
+#endif /* #ifdef WIN32 */
 
 /* end of file */
