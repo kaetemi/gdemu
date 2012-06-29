@@ -106,6 +106,11 @@ namespace {
 				GameduinoSPI.setVBlank(1);
 				System.prioritizeDuinoThread();
 
+#ifndef WIN32
+				System.holdDuinoThread(); // vblank'd !
+				System.resumeDuinoThread();
+#endif
+
 				unsigned long flipStart = System.getMicros();
 				GraphicsMachine.flip();
 				unsigned long flipDelta = System.getMicros() - flipStart;
@@ -145,8 +150,10 @@ namespace {
 				}
 			}
 
+#ifdef WIN32
 			System.holdDuinoThread(); // don't let the other thread hog cpu
 			System.resumeDuinoThread();
+#endif
 
 			//fixRounding = -2 - fixRounding;
 			// else delay(6);
