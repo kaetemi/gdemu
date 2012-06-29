@@ -214,12 +214,29 @@ long SystemClass::getFreqTick(int hz)
 
 void SystemClass::delay(int ms)
 {
-	usleep(ms * 1000);
+	long endMillis = getMillis() + (long)ms;
+	int sleepMillis = endMillis - getMillis();
+	do
+	{
+		if (sleepMillis >= 1000) sleep(sleepMillis / 1000);
+		else usleep(sleepMillis * 1000);
+		sleepMillis = endMillis - getMillis();
+	} while (sleepMillis > 0);
 }
 
 void SystemClass::delayMicros(int us)
 {
-	usleep(us);
+	long endMicros = getMicros() + (long)us;
+	int sleepMicros = (long)us;
+	do
+	{
+		if (endMicros >= 1000) sleep(endMicros / 1000);
+		else usleep(endMicros * 1000);
+		sleepMicros = endMicros - getMicros();
+	} while (sleepMicros > 0);
+
+	/*if (us >= 1000000) sleep(us / 1000000);
+	else usleep(us);*/
 
 	/*
 
