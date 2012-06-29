@@ -26,7 +26,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GDEMU_SDL
+#ifdef WIN32
 #ifndef GDEMU_SYSTEM_WINDOWS_H
 #define GDEMU_SYSTEM_WINDOWS_H
 // #include <...>
@@ -49,6 +49,11 @@
 // Windows Headers
 #include <windows.h>
 #include <avrt.h>
+
+// SDL
+#ifdef GDEMU_SDL
+#	include <SDL.h>
+#endif
 
 // GDI+
 #include <gdiplus.h>
@@ -137,6 +142,6 @@ extern SystemWindowsClass SystemWindows;
 } /* namespace GDEMU */
 
 #endif /* #ifndef GDEMU_SYSTEM_WINDOWS_H */
-#endif /* #ifndef GDEMU_SDL */
+#endif /* #ifdef WIN32 */
 
 /* end of file */
