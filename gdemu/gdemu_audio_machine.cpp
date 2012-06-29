@@ -47,6 +47,8 @@ AudioMachineClass AudioMachine;
 #define D_GDEMU_AUDIOFP double
 
 static D_GDEMU_AUDIOFP s_AudioRad[64] = { 0 };
+static D_GDEMU_AUDIOFP s_VoiceVolFadeL[64] = { 0 };
+static D_GDEMU_AUDIOFP s_VoiceVolFadeR[64] = { 0 };
 
 // for cheap nearest resampling
 static double s_SecondsPassedForLRBufferSample = 0.0;
@@ -88,12 +90,12 @@ void AudioMachineClass::process(short *audioBuffer, int samples)
 			while (s_SecondsPassedForLRBufferSample >= s_SecondsPerLRBufferSample)
 			{
 				s_SecondsPassedForLRBufferSample -= s_SecondsPerLRBufferSample;
-				/*unsigned short sampleL = GameduinoSPI.getNextSampleL();
-				unsigned short sampleR = GameduinoSPI.getNextSampleR();
-				if (sampleL == 0) sampleL = 0x8000; // because!
-				if (sampleR == 0) sampleR = 0x8000;
-				s_SampleL = (short)((int)sampleL - 0x8000);
-				s_SampleR = (short)((int)sampleR - 0x8000);*/
+				//unsigned short sampleL = GameduinoSPI.getNextSampleL();
+				//unsigned short sampleR = GameduinoSPI.getNextSampleR();
+				//if (sampleL == 0) sampleL = 0x8000; // because!
+				//if (sampleR == 0) sampleR = 0x8000;
+				//s_SampleL = (short)((int)sampleL - 0x8000);
+				//s_SampleR = (short)((int)sampleR - 0x8000);
 				s_SampleL = GameduinoSPI.getNextSampleL();
 				s_SampleR = GameduinoSPI.getNextSampleR();
 			}
@@ -132,7 +134,10 @@ void AudioMachineClass::process(short *audioBuffer, int samples)
 			rightAmpI *= D_GDEMU_AUDIOAMP;
 			rightAmp = (D_GDEMU_AUDIOFP)rightAmpI;
 
-			if (leftAmpI || rightAmpI)
+			D_GDEMU_AUDIOFP leftAmpFade = s_VoiceVolFadeL[i];
+			D_GDEMU_AUDIOFP rightAmpFade = s_VoiceVolFadeR[i];
+
+			if (leftAmpI || rightAmpI || leftAmpFade > 0 || rightAmpFade > 0)
 			{
 				if (whiteNoise)
 				{
@@ -155,11 +160,45 @@ void AudioMachineClass::process(short *audioBuffer, int samples)
 					D_GDEMU_AUDIOFP addRad = (D_GDEMU_AUDIOFP)PI / (D_GDEMU_AUDIOFP)audioFrequency * (D_GDEMU_AUDIOFP)0.5 * (D_GDEMU_AUDIOFP)frequency;
 					D_GDEMU_AUDIOFP audRad = s_AudioRad[i];
 
+					static const D_GDEMU_AUDIOFP softener = 100;
+
 					for (int s = 0; s < samples; ++s)
 					{
+						if (leftAmpFade != leftAmp)
+						{
+							if (leftAmpFade < leftAmp)
+							{
+								leftAmpFade += softener;
+								if (leftAmpFade > leftAmp)
+									leftAmpFade = leftAmp;
+							}
+							if (leftAmpFade > leftAmp)
+							{
+								leftAmpFade -= softener;
+								if (leftAmpFade < leftAmp)
+									leftAmpFade = leftAmp;
+							}
+						}
+
+						if (rightAmpFade != rightAmp)
+						{
+							if (rightAmpFade < rightAmp)
+							{
+								rightAmpFade += softener;
+								if (rightAmpFade > rightAmp)
+									rightAmpFade = rightAmp;
+							}
+							if (rightAmpFade > rightAmp)
+							{
+								rightAmpFade -= softener;
+								if (rightAmpFade < rightAmp)
+									rightAmpFade = rightAmp;
+							}
+						}
+
 						D_GDEMU_AUDIOFP sinValue = sin(audRad);
-						audioBuffer[s * 2] += (short)(sinValue * leftAmp);
-						audioBuffer[(s * 2) + 1] += (short)(sinValue * rightAmp);
+						audioBuffer[s * 2] += (short)(sinValue * leftAmpFade);
+						audioBuffer[(s * 2) + 1] += (short)(sinValue * rightAmpFade);
 
 						/*for (int i = 0; i < (int)((1.0 + sinValue) * 64); ++i) putchar(' ');
 						putchar('|');
@@ -168,6 +207,9 @@ void AudioMachineClass::process(short *audioBuffer, int samples)
 						audRad += addRad;
 						while (audRad > (PI * 2)) audRad -= (PI * 2);
 					}
+
+					s_VoiceVolFadeL[i] = leftAmpFade;
+					s_VoiceVolFadeR[i] = rightAmpFade;
 
 					s_AudioRad[i] = audRad;
 				}
