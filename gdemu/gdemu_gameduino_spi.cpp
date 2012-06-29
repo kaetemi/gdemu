@@ -212,7 +212,7 @@ uint8_t inline GameduinoSPIClass::readRam(int offset)
 			case VBLANK:
 				if (!s_VBlankPulsedSinceLastRequest)
 				{
-					// printf("anti vblank spam\n");
+					// printf("anti vblank spam %i\n", System.getMicros());
 					System.delay(1);
 				}
 				break;
